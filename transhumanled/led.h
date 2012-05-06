@@ -21,6 +21,7 @@ class ImgDMD : public DMD {
 		void posSquareTo(int* array, int dlay);
 		void negSquareTo(int* array, int dlay);
 		void posCircleTo(int* array, int dlay);
+                void bubbleTo(int* array, int dlay);
 	private:
 		void drawFilledCircleSub(int cx, int cy, int x, int y, byte bGraphicsMode);
 		int pythag(int a, int b);
