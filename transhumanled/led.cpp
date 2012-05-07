@@ -114,12 +114,14 @@ int ImgDMD::pythag(int a, int b) {
   return sqrt(a*a+b*b);
 }
 
-void ImgDMD::bubbleTo(int* array, int dlay) { 
-  //some problems, because d is actually 2*r + 1
-  #define bubblesWide 4
-  #define r (PIXELS_WIDE/(2*bubblesWide))
+void ImgDMD::bubbleTo(int* array, int bubblesWide, int dlay) { 
+
+  #define bubblesWide bubblesWide
+  #define r (PIXELS_WIDE/(2*bubblesWide)) //radius of each bubble
   #define bubblesTall (PIXELS_TALL/(2*r))
-  #define numBubbles (bubblesTall*bubblesWide)
+  #define offsetBubblesWide (bubblesWide+1) //bubbles that fill in the gaps between central bubbles
+  #define offsetBubblesTall (bubblesTall+1)
+  #define numBubbles ((bubblesTall*bubblesWide+offsetBubblesTall*offsetBubblesWide)
   
   Serial.print(r);
   
@@ -129,20 +131,39 @@ void ImgDMD::bubbleTo(int* array, int dlay) {
   
   int bubbleIndex = -1;
   bubble barry[numBubbles];
+  //init central bubbles
   for (int i=0; i<bubblesWide; i++) {
     for (int j=0; j<bubblesTall; j++) {
       bubbleIndex++;
       barry[bubbleIndex]=(bubble){r+i*2*r, r+j*2*r, r};
     }
   }
+  //init offset bubbles
+  for (int i=0; i<offsetBubblesWide; i++) {
+	for (int j=0; j<offsetBubblesTall; j++) {
+	  bubbleIndex++;
+	  barry[bubbleIndex]=(bubble){i*2*r, j*2*r, r};
+	}	
+  }
   
+  //randomizes the order in which the bubbles are placed
   int order[numBubbles];
   for (int i=0; i<numBubbles; i++)
     order[i]=i;
-  //randomize here
+  int a; int b;
+  for (int i=0; i<numBubbles*2; i++) {
+	a = random(numBubbles);
+	b = random(numBubbles);
+	int temp = order[a];
+	order[a] = order[b];
+	order[b] = temp;
+  }	  
   
-  for (int j=0; j<numBubbles; j++) {
-    drawFilledCircle(barry[order[j]].x, barry[order[j]].y, barry[order[j]].radius, GRAPHICS_NORMAL);
+  //place bubbles on LED
+  for (int i=0; i<numBubbles; i++) {
+    drawFilledCircle(barry[order[i]].x, barry[order[i]].y, barry[order[i]].radius, GRAPHICS_NORMAL);
     delay(dlay);
   }
+  //in case there are gaps, finish the job
+  drawFilledBox(0,0,PIXELS_WIDE,PIXELS_TALL, GRAPHICS_NORMAL);
 }
